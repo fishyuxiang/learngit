@@ -1,29 +1,31 @@
 /*
- * function.h
+ * ipfunction.h
  *
- *  Created on: 2017年7月31日
+ *  Created on: 2017年8月25日
  *      Author: yuxiang
  */
 
-#ifndef DNSFUNCTION_H_
-#define DNSFUNCTION_H_
+#ifndef IPFUNCTION_H_
+#define IPFUNCTION_H_
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
 #include<string.h>
 #include<unistd.h>
 
-#define NAMESIZE 128
+#define IPSIZE 16
+
 
 char daydate[20];
 
 struct dnslist {
 //	time_t time; //log文件时间字段
-	char name[NAMESIZE]; //域名
+	char name[IPSIZE]; //ip
 };
 struct resultlist {
-	char name[NAMESIZE]; //域名
-	int number; //域名访问次数
+	char name[IPSIZE]; //ip
+	int number; //ip访问次数
 };
 struct dnslist dns[3000000];
 struct resultlist res[100000];
@@ -31,7 +33,7 @@ int lines;
 int reslines;
 
 typedef struct node {
-	char keyname[NAMESIZE];
+	char keyname[IPSIZE];
 	int number;
 	struct node *lChild, *rChild;
 } Node, *BSTree;
@@ -90,7 +92,7 @@ time_t strtotime2(char datetime[]) //字符串转化为时间
 	return unixtime;
 }
 
-int collectdns(char logname[], time_t beginhour, time_t endhour) //提取log文件中域名字段，保存于dnslist结构体数组dns中
+int collectdns(char logname[], time_t beginhour, time_t endhour) //提取log文件中时间，ip字段，保存于dnslist结构体数组dns中
 {
 	lines = 0;
 	FILE *read;
@@ -116,27 +118,27 @@ int collectdns(char logname[], time_t beginhour, time_t endhour) //提取log文�
 		}
 		date[j] = '\0';
 		t = strtotime1(date);
-                printf("time:%ld\n",t);
+//		printf("time:%ld\n",t);
 		if (t >= beginhour && t < endhour) {
 //			dns[lines].time = t;
 			j = 0;
-			for (int k = 0; k < 2; k++) {
+			for (int k = 0; k < 8; k++) {
 				while (*str != ' ')
 					str++;
 				str++;
 			}
-			while (*str != ',') {
+			while (*str != '\n') {
 				dns[lines].name[j] = *str;
 				str++;
 				j++;
 			}
 			dns[lines].name[j] = '\0';
-
+                        
 			lines++;
-//			printf("lines:%d\n",lines);
+//			printf("....detaillines:%d\n",lines);
 		} else if (t >= endhour) {
 			fclose(read);
-//			printf("t >= endhour,lines:%d\n",lines);
+//			printf("t >= endhour,detaillines:%d\n",lines);
 			return 1;
 		}
 	}
@@ -206,7 +208,7 @@ int collectdaydns(char txtname[]) //收集某天统计的域名访问数据
 	int number = 0;
 	FILE *read;
 	char name[100] = { }, line[512], *str, numbuf[12];
-	strcat(name, "/home/yuxiang/test/log/day_");
+	strcat(name, "/home/yuxiang/test/log/ipday_");
 	strcat(name, txtname);
 	strcat(name, ".log\0");
 	read = fopen(name, "r");
@@ -243,7 +245,7 @@ int collecthourdns(char txtname[]) //收集某天24小时统计的域名访问�
 	int number = 0;
 	FILE *read;
 	char name[100] = { }, line[512], *str, numbuf[12];
-	strcat(name, "/home/yuxiang/test/log/hour_");
+	strcat(name, "/home/yuxiang/test/log/iphour_");
 	strcat(name, txtname);
 	strcat(name, ".log\0");
 	read = fopen(name, "r");
@@ -337,7 +339,7 @@ int writetohourtxt(char txtname[]) //将每小时统计的数据写入文件保�
 {
 	FILE *fp;
 	char name[100] = { }, buffer[128];
-	strcat(name, "/home/yuxiang/test/log/hour_");
+	strcat(name, "/home/yuxiang/test/log/iphour_");
 	strcat(name, txtname);
 	strcat(name, ".log\0");
 	fp = fopen(name, "a+");
@@ -357,7 +359,7 @@ int writetodaytxt(char txtname[]) //将每天统计的数据写入文件保存
 {
 	FILE *fp;
 	char name[100] = { }, buffer[128];
-	strcat(name, "/home/yuxiang/test/log/day_");
+	strcat(name, "/home/yuxiang/test/log/ipday_");
 	strcat(name, txtname);
 	strcat(name, ".log\0");
 	fp = fopen(name, "a+");
@@ -420,7 +422,7 @@ void swapnumber(int *a, int *b) {
 }
 
 void swapname(char *a, char *b) {
-	char t[NAMESIZE];
+	char t[IPSIZE];
 	strcpy(t, a);
 	strcpy(a, b);
 	strcpy(b, t);
@@ -477,4 +479,4 @@ void query(char n[],char begint[],char endt[]){
 	show(number);
 }
 
-#endif /* DNSFUNCTION_H_ */
+#endif /* IPFUNCTION_H_ */
